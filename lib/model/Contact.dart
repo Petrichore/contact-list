@@ -6,4 +6,9 @@ class Contact {
 
   const Contact(this.fullName, this.imageUrl, this.isOnline,
       {this.lastSeen = ''});
+
+  @override
+  String toString() {
+    return 'Contact{fullName: $fullName, imageUrl: $imageUrl, isOnline: $isOnline, lastSeen: $lastSeen}';
+  }
 }

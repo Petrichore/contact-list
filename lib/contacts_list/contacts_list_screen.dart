@@ -15,7 +15,12 @@ class ContactsListScreen extends StatelessWidget {
   }
 }
 
-class ContactsListContent extends StatelessWidget {
+class ContactsListContent extends StatefulWidget {
+  @override
+  createState() => ContactsListContentState();
+}
+
+class ContactsListContentState extends State {
   final contactsList = [
     Contact('Mark Go', 'https://googleflutter.com/sample_image.jpg', false,
         lastSeen: 'just now'),
@@ -36,20 +41,43 @@ class ContactsListContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-        itemCount: contactsList.length,
-        itemBuilder: (context, i) {
-          if (i < contactsList.length - 1) {
-            return Padding(
-              padding: EdgeInsets.fromLTRB(0, 12, 0, 0),
-              child: ContactItem(contactsList[i]),
-            );
-          } else {
-            return Padding(
-              padding: EdgeInsets.fromLTRB(0, 12, 0, 12),
-              child: ContactItem(contactsList[i]),
-            );
-          }
-        });
+      itemCount: contactsList.length,
+      itemBuilder: (context, i) {
+        return Dismissible(
+          direction: DismissDirection.endToStart,
+          onDismissed: (direction) {
+            if (direction == DismissDirection.endToStart) {
+              showSnackBar(context, contactsList[i].fullName);
+              deleteItem(i);
+            }
+          },
+          key: ObjectKey(contactsList[i]),
+          child: i < contactsList.length - 1
+              ? Padding(
+                  padding: EdgeInsets.fromLTRB(0, 12, 0, 0),
+                  child: ContactItem(contactsList[i]),
+                )
+              : Padding(
+                  padding: EdgeInsets.fromLTRB(0, 12, 0, 12),
+                  child: ContactItem(contactsList[i]),
+                ),
+        );
+      },
+    );
+  }
+
+  void showSnackBar(BuildContext context, String contactName) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("$contactName deleted from contacts"),
+      ),
+    );
+  }
+
+  void deleteItem(index) {
+    setState(() {
+      contactsList.removeAt(index);
+    });
   }
 }
 
@@ -61,55 +89,61 @@ class ContactItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
-          shadowColor: Colors.grey,
-          elevation: 4,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(4),
-            onTap: () => {},
-            child: Row(
+      padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(2),
+        ),
+        shadowColor: Colors.grey,
+        elevation: 4,
+        child: Row(
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 0, 16),
+              child: contactImage(),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsets.fromLTRB(16, 16, 0, 16),
-                  child: CircleAvatar(
-                    radius: 30,
-                    foregroundImage: NetworkImage(item.imageUrl),
-                  ),
+                  padding: EdgeInsets.fromLTRB(16, 16, 0, 0),
+                  child: contactNameInfo(),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(16, 16, 24, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        item.fullName,
-                        style: TextStyle(color: Colors.black, fontSize: 24),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(0, 8, 0, 0),
-                        child: item.isOnline
-                            ? Text(
-                                'Online',
-                                style: TextStyle(
-                                    color: Colors.green, fontSize: 16),
-                              )
-                            : Text(
-                                item.lastSeen,
-                                style:
-                                    TextStyle(color: Colors.grey, fontSize: 16),
-                              ),
-                      ),
-                    ],
-                  ),
+                  padding: EdgeInsets.fromLTRB(16, 8, 0, 16),
+                  child: contactActivityInfo(),
                 ),
               ],
             ),
-          ),
-        ));
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget contactNameInfo() {
+    return Text(
+      item.fullName,
+      style: TextStyle(color: Colors.black, fontSize: 24),
+    );
+  }
+
+  Widget contactImage() {
+    return CircleAvatar(
+      radius: 30,
+      foregroundImage: NetworkImage(item.imageUrl),
+    );
+  }
+
+  Widget contactActivityInfo() {
+    return item.isOnline
+        ? Text(
+            'Online',
+            style: TextStyle(color: Colors.green, fontSize: 16),
+          )
+        : Text(
+            item.lastSeen,
+            style: TextStyle(color: Colors.grey, fontSize: 16),
+          );
   }
 }
