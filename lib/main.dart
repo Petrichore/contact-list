@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'contacts_list.dart';
+import 'contacts_list/contacts_list_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: ContactsList(),
+      home: ContactsListScreen(),
     );
   }
 }
