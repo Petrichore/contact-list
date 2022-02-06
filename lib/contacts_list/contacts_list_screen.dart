@@ -1,19 +1,6 @@
+import 'package:contacts_list/contacts_list/search_delegate.dart';
 import 'package:contacts_list/model/Contact.dart';
 import 'package:flutter/material.dart';
-
-class ContactsListScreen extends StatelessWidget {
-  // This widget is the root of your application.
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Contacts List'),
-      ),
-      body: ContactsListContent(),
-    );
-  }
-}
 
 class ContactsListContent extends StatefulWidget {
   @override
@@ -40,6 +27,54 @@ class ContactsListContentState extends State {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Contacts List'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: CustomSearch(contactsList),
+              );
+            },
+          )
+        ],
+      ),
+      body: ContactList(
+        contactsList,
+        (contact) => {
+          showSnackBar(context, contact.fullName),
+          deleteItem(contact)
+        },
+      ),
+    );
+  }
+
+  void showSnackBar(BuildContext context, String contactName) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("$contactName deleted from contacts"),
+      ),
+    );
+  }
+
+  void deleteItem(Contact contact) {
+    setState(() {
+      contactsList.remove(contact);
+    });
+  }
+}
+
+class ContactList extends StatelessWidget {
+  final List<Contact> contactsList;
+  final Function(Contact) onItemDismissed;
+
+  ContactList(this.contactsList, this.onItemDismissed);
+
+  @override
+  Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: contactsList.length,
       itemBuilder: (context, i) {
@@ -47,8 +82,7 @@ class ContactsListContentState extends State {
           direction: DismissDirection.endToStart,
           onDismissed: (direction) {
             if (direction == DismissDirection.endToStart) {
-              showSnackBar(context, contactsList[i].fullName);
-              deleteItem(i);
+              onItemDismissed(contactsList[i]);
             }
           },
           key: ObjectKey(contactsList[i]),
@@ -64,20 +98,6 @@ class ContactsListContentState extends State {
         );
       },
     );
-  }
-
-  void showSnackBar(BuildContext context, String contactName) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("$contactName deleted from contacts"),
-      ),
-    );
-  }
-
-  void deleteItem(index) {
-    setState(() {
-      contactsList.removeAt(index);
-    });
   }
 }
 
